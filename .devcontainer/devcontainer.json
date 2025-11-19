@@ -1,8 +1,0 @@
-{
-  "name": "monitoramento-backend",
-  "dockerComposeFile": "docker-compose.yml",
-  "service": "backend",
-  "workspaceFolder": "/app",
-  "postCreateCommand": "pip install -r requirements.txt"
-}
-
