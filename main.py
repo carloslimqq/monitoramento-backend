@@ -1,48 +1,26 @@
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends
 from sqlalchemy.orm import Session
-from database import SessionLocal, engine, Base
-import models
-from pydantic import BaseModel
-from typing import List
-from datetime import datetime
+from database import Base, engine, get_db
+from models import Leitura
+from mqtt_client import start_mqtt
 
-# cria tabelas se não existirem
 Base.metadata.create_all(bind=engine)
 
-app = FastAPI(title="Monitoramento Industrial - Backend")
+app = FastAPI()
 
-# Dependency
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-class TelemetriaOut(BaseModel):
-    id: int
-    maquina: str
-    parametro: str
-    valor: float
-    timestamp: datetime
-
-    class Config:
-        orm_mode = True
+mqtt_client = start_mqtt()
 
 @app.get("/")
-def read_root():
-    return {"status": "Backend rodando!"}
+def raiz():
+    return {"mensagem": "API de Monitoramento Industrial ativa!"}
 
-@app.get("/telemetria/recent", response_model=List[TelemetriaOut])
-def get_recent(limit: int = 50, db: Session = Depends(get_db)):
-    results = db.query(models.Telemetria).order_by(models.Telemetria.timestamp.desc()).limit(limit).all()
-    return results
+@app.get("/leituras")
+def listar(maquina: str = None, db: Session = Depends(get_db)):
+    query = db.query(Leitura)
+    if maquina:
+        query = query.filter(Leitura.maquina == maquina)
+    return query.order_by(Leitura.id.desc()).all()
 
-@app.get("/telemetria/by_machine/{maquina}", response_model=List[TelemetriaOut])
-def get_by_machine(maquina: str, limit: int = 100, db: Session = Depends(get_db)):
-    results = (db.query(models.Telemetria)
-                  .filter(models.Telemetria.maquina == maquina)
-                  .order_by(models.Telemetria.timestamp.desc())
-                  .limit(limit)
-                  .all())
-    return results
+@app.get("/leituras/{id}")
+def buscar(id: int, db: Session = Depends(get_db)):
+    return db.query(Leitura).filter(Leitura.id == id).first()
