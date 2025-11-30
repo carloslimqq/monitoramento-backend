@@ -11,9 +11,10 @@ def on_message(client, userdata, msg):
         payload = json.loads(msg.payload.decode())
         db = SessionLocal()
 
+        # Agora capturamos corretamente o campo 'equipamento'
         leitura = Leitura(
-            maquina=payload.get("maquina"),
-            dados=payload
+            maquina=payload.get("equipamento"),  # atualizado
+            dados=payload                         # salva o JSON inteiro
         )
 
         db.add(leitura)
