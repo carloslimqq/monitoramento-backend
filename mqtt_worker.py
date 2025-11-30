@@ -8,7 +8,7 @@ Exemplo: "laser,temperatura,350.5"
 import paho.mqtt.client as mqtt
 import os
 from database import SessionLocal
-from models import Telemetria
+from models import Leitura
 import time
 
 MQTT_HOST = os.getenv("MQTT_HOST", "localhost")
