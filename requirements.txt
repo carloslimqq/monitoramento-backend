@@ -1,6 +1,6 @@
 fastapi
-uvicorn[standard]
-pydantic
-paho-mqtt
+uvicorn
 sqlalchemy
+paho-mqtt
 mysqlclient
+
